@@ -1,4 +1,4 @@
-# alpine.Slackbuild
+# alpine.SlackBuild
 A SlackBuild for Alpine
 
 The usage is the very same of https://slackbuilds.org/howto/
