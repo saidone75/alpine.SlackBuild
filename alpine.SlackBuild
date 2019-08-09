@@ -52,7 +52,7 @@ find . \
  -exec chmod 644 {} \;
 
 # override SLKCFLAGS if CFLAGS is set
-if [ ! -z ${CFLAGS+x} ]; then SLKCFLAGS="$CFLAGS"; fi
+if [ -n "$(echo $CFLAGS|tr -d '[:space:]')" ]; then SLKCFLAGS="$CFLAGS"; fi
 
 CFLAGS="$SLKCFLAGS" \
   ./configure \
