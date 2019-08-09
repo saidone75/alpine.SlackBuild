@@ -40,10 +40,10 @@ set -e
 
 rm -rf $PKG
 mkdir -p $TMP $PKG $OUTPUT
-cd $TMP || exit 1
+cd $TMP
 rm -rf $APP-$VERSION
-tar xvf $CWD/$APP-$VERSION.tar.xz || exit 1
-cd $APP-$VERSION || exit 1
+tar xvf $CWD/$APP-$VERSION.tar.xz
+cd $APP-$VERSION
 chown -R root:root .
 chmod -R u+w,go+r-w,a-s .
 
@@ -62,9 +62,9 @@ CFLAGS="$SLKCFLAGS" \
     --disable-debug \
     --without-tcl
 
-make || exit
+make
 
-make install PREFIX=/usr DESTDIR=$PKG || exit
+make install PREFIX=/usr DESTDIR=$PKG
 
 mkdir -p $PKG/usr/doc/$APP-$VERSION
 cat $CWD/$APP.SlackBuild > $PKG/usr/doc/$APP-$VERSION/$APP.SlackBuild
@@ -81,11 +81,8 @@ if [ -e $CWD/doinst.sh ]; then
     cp $CWD/doinst.sh $PKG/install
 fi
 
-( cd $PKG
-   find . | xargs file | grep "executable" | grep ELF | cut -f 1 -d : | xargs strip --strip-unneeded 2> /dev/null
-   find . | xargs file | grep "shared object" | grep ELF | cut -f 1 -d : | xargs strip --strip-unneeded 2> /dev/null
-)
-
+find $PKG | xargs file | grep -e "executable" -e "shared object" | grep ELF \
+  | cut -f 1 -d : | xargs strip --strip-unneeded 2> /dev/null
 
 if [ -d $PKG/usr/man ]; then
   ( cd $PKG/usr/man
