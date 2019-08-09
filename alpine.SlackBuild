@@ -4,7 +4,7 @@
 # saidone@saidone.org revision date 2019/08/09
 # license: see LICENSE
 
-PRGNAM=alpine
+APP=alpine
 VERSION=${VERSION:-2.21}
 BUILD=${BUILD:-1}
 TAG=${TAG:-_SBo}
@@ -19,7 +19,7 @@ fi
 
 CWD=$(pwd)
 TMP=${TMP:-/tmp/SBo}
-PKG=$TMP/package-$PRGNAM
+PKG=$TMP/package-$APP
 OUTPUT=${OUTPUT:-/tmp}
 
 if [ "$ARCH" = "i486" ]; then
@@ -40,16 +40,12 @@ set -e
 
 rm -rf $PKG
 mkdir -p $TMP $PKG $OUTPUT
-cd $TMP
-rm -rf $PRGNAM-$VERSION
-tar xvf $CWD/$PRGNAM-$VERSION.tar.xz
-cd $PRGNAM-$VERSION
+cd $TMP || exit 1
+rm -rf $APP-$VERSION
+tar xvf $CWD/$APP-$VERSION.tar.xz || exit 1
+cd $APP-$VERSION || exit 1
 chown -R root:root .
-find . \
- \( -perm 777 -o -perm 775 -o -perm 711 -o -perm 555 -o -perm 511 \) \
- -exec chmod 755 {} \; -o \
- \( -perm 666 -o -perm 664 -o -perm 600 -o -perm 444 -o -perm 440 -o -perm 400 \) \
- -exec chmod 644 {} \;
+chmod -R u+w,go+r-w,a-s .
 
 # override SLKCFLAGS if CFLAGS is set
 if [ -n "$(echo $CFLAGS|tr -d '[:space:]')" ]; then SLKCFLAGS="$CFLAGS"; fi
@@ -61,37 +57,47 @@ CFLAGS="$SLKCFLAGS" \
     --sysconfdir=/etc \
     --localstatedir=/var \
     --mandir=/usr/man \
-    --docdir=/usr/doc/$PRGNAM-$VERSION \
+    --docdir=/usr/doc/$APP-$VERSION \
     --build=$ARCH-slackware-linux \
     --disable-debug \
     --without-tcl
 
-sed -i "/^CFLAGS =/s|=|+=|" Makefile
+make || exit
 
-make
+make install PREFIX=/usr DESTDIR=$PKG || exit
 
-make install PREFIX=/usr DESTDIR=$PKG
-
-find $PKG | xargs file | grep -e "executable" -e "shared object" | grep ELF \
-  | cut -f 1 -d : | xargs strip --strip-unneeded 2> /dev/null || true
-
-find $PKG/usr/man -type f -exec gzip -9 {} \;
-for i in $( find $PKG/usr/man -type l ) ; do ln -s $( readlink $i ).gz $i.gz ; rm $i ; done
-
-mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION
-cat $CWD/$PRGNAM.SlackBuild > $PKG/usr/doc/$PRGNAM-$VERSION/$PRGNAM.SlackBuild
-cp $TMP/$PRGNAM-$VERSION/{LICENSE,NOTICE,README,VERSION} $PKG/usr/doc/$PRGNAM-$VERSION
-cp -R $TMP/$PRGNAM-$VERSION/doc/{tech-notes,brochure.txt,mailcap.unx,mime.types} $PKG/usr/doc/$PRGNAM-$VERSION
-
-cp -R $CWD/etc $PKG
+mkdir -p $PKG/usr/doc/$APP-$VERSION
+cat $CWD/$APP.SlackBuild > $PKG/usr/doc/$APP-$VERSION/$APP.SlackBuild
+cp -a $TMP/$APP-$VERSION/{LICENSE,NOTICE,README,VERSION} $PKG/usr/doc/$APP-$VERSION
+cp -aR $TMP/$APP-$VERSION/doc/{tech-notes,brochure.txt,mailcap.unx,mime.types} $PKG/usr/doc/$APP-$VERSION
+find $PKG/usr/doc/$APP-$VERSION -type f -exec chmod 644 {} \;
+cp -aR $CWD/etc $PKG
+find $PKG/etc -type f -exec chmod 644 {} \;
 
 mkdir -p $PKG/install
 cat $CWD/slack-desc > $PKG/install/slack-desc
 
-# Add doinst.sh to package (if it exists)
 if [ -e $CWD/doinst.sh ]; then
     cp $CWD/doinst.sh $PKG/install
 fi
 
+( cd $PKG
+   find . | xargs file | grep "executable" | grep ELF | cut -f 1 -d : | xargs strip --strip-unneeded 2> /dev/null
+   find . | xargs file | grep "shared object" | grep ELF | cut -f 1 -d : | xargs strip --strip-unneeded 2> /dev/null
+)
+
+
+if [ -d $PKG/usr/man ]; then
+  ( cd $PKG/usr/man
+  find . -type f -exec gzip -9 {} \;
+  for i in $(find . -type l) ; do ln -s $(readlink $i).gz $i.gz ; rm $i ; done
+  ) 
+fi
+
+if [ -d $PKG/usr/info ]; then
+  gzip -9 $PKG/usr/info/*.info
+  rm -f $PKG/usr/info/dir
+fi
+
 cd $PKG
-/sbin/makepkg -l y -c n $OUTPUT/$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.${PKGTYPE:-tgz}
+/sbin/makepkg -l y -c n $OUTPUT/$APP-$VERSION-$ARCH-$BUILD$TAG.${PKGTYPE:-tgz}
