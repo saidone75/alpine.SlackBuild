@@ -59,8 +59,11 @@ CFLAGS="$SLKCFLAGS" \
     --mandir=/usr/man \
     --docdir=/usr/doc/$APP-$VERSION \
     --build=$ARCH-slackware-linux \
-    --disable-debug \
-    --without-tcl
+    --without-ldap \
+    --without-smime \
+    --without-tcl \
+    --without-npa \
+    --disable-debug
 
 make
 
