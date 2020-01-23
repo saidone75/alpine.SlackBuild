@@ -1,11 +1,11 @@
 #!/bin/sh -e
 
 # Slackware build script for Alpine
-# saidone@saidone.org revision date 2019/08/09
+# saidone@saidone.org revision date 2020/01/23
 # license (of this script and its accessories, not that of the application it will package): see LICENSE
 
 APP=alpine
-VERSION=${VERSION:-2.21}
+VERSION=${VERSION:-2.22}
 BUILD=${BUILD:-1}
 TAG=${TAG:-_SBo}
 
