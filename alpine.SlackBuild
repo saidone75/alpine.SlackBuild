@@ -5,7 +5,7 @@
 # license (of this script and its accessories, not that of the application it will package): see LICENSE
 
 APP=alpine
-VERSION=${VERSION:-2.23}
+VERSION=${VERSION:-2.24}
 BUILD=${BUILD:-1}
 TAG=${TAG:-_SBo}
 
